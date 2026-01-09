@@ -1,0 +1,39 @@
+# Environnement
+.env
+.env.local
+.env.*.local
+
+# Corrections
+corrections/*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# Fichiers temporaires
+*.tmp
+*.temp
