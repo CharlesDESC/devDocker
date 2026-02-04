@@ -1,1 +1,92 @@
 
+name: CI/CD Docker Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # On définit les services pour que l'API puisse passer ses tests
+    services:
+      db:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        # On attend que Postgres soit prêt
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 1. Construction de l'image (en utilisant ton Dockerfile spécifique)
+      - name: Build API Image
+        run: |
+          docker build -t my-api:test -f python.Dockerfile .
+
+      # 2. Test de l'image (Vérification basique ou exécution de tests unitaires)
+      - name: Run Tests
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+          REDIS_HOST: localhost
+        run: |
+          # Exemple : Lancer le conteneur pour vérifier s'il démarre sans erreur
+          docker run -d --name api-test -p 8000:8000 \
+            -e POSTGRES_HOST=$POSTGRES_HOST \
+            -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+            --network host \
+            my-api:test
+          
+          # Laisser un peu de temps et vérifier les logs
+          sleep 5
+          docker logs api-test
+          docker ps | grep api-test
+
+      # 3. Connexion à GitHub Container Registry
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4. Push de l'image finale
+      - name: Push Image to GHCR
+        if: github.event_name != 'pull_request'
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository }}/api
+          # Convertir le nom en minuscules (requis par Docker)
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          
+          docker tag my-api:test $IMAGE_ID:latest
+          docker tag my-api:test $IMAGE_ID:${{ github.sha }}
+          
+          docker push $IMAGE_ID:latest
+          docker push $IMAGE_ID:${{ github.sha }}
