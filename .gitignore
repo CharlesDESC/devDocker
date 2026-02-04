@@ -37,3 +37,8 @@ Thumbs.db
 # Fichiers temporaires
 *.tmp
 *.temp
+
+# Terraform
+*terraform*
+
+
