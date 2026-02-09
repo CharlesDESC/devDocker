@@ -11,6 +11,10 @@ on:
             options:
                - production
 
+permissions:
+   contents: read
+   packages: write
+
 jobs:
    # ===========================================
    # JOB 1: Build & Publish Docker Images (API)
