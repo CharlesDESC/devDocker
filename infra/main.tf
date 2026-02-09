@@ -12,13 +12,17 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
 resource "tls_private_key" "pk" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
 resource "aws_key_pair" "generated_key" {
-  key_name   = "devdocker_key_terraform"
+  key_name   = "devdocker-key-${random_id.suffix.hex}"
   public_key = tls_private_key.pk.public_key_openssh
 }
 
@@ -29,7 +33,7 @@ resource "local_file" "ssh_key" {
 }
 
 resource "aws_security_group" "app_sg" {
-  name        = "devdocker_app_sg"
+  name        = "devdocker-app-sg-${random_id.suffix.hex}"
   description = "Allow SSH, Frontend (8080), and API (8000) access"
 
   ingress {
