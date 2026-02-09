@@ -35,6 +35,9 @@
           state: started
           enabled: yes
 
+     - name: Reset SSH connection to apply group membership
+       meta: reset_connection
+
      # 2. Authenticate to GitHub Container Registry
      - name: Login to GitHub Container Registry
        community.docker.docker_login:
