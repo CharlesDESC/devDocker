@@ -109,7 +109,7 @@
        become: yes
        become_user: ubuntu
 
-     # 7. Start database services first
+     # 7. Start database and cache services first
      - name: Start database and cache services
        command: docker compose up -d db redis
        args:
@@ -117,18 +117,9 @@
        become: yes
        become_user: ubuntu
 
-     - name: Wait for database to be healthy
-       shell: |
-          docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' devdocker-db-1
-       args:
-          chdir: "{{ project_dir }}"
-       become: yes
-       become_user: ubuntu
-       register: db_health
-       retries: 20
-       delay: 5
-       until: db_health.stdout == "healthy"
-       failed_when: false
+     - name: Wait for database initialization
+       pause:
+          seconds: 20
 
      # 8. Start application services
      - name: Start application stack
@@ -141,7 +132,7 @@
      # 9. Wait for all services to be ready
      - name: Wait for services to start
        pause:
-          seconds: 10
+          seconds: 15
 
      # 9. Verify containers are running
      - name: Get running containers

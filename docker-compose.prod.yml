@@ -35,10 +35,8 @@ services:
          - frontend-network
          - backend-network
       depends_on:
-         db:
-            condition: service_healthy
-         redis:
-            condition: service_healthy
+         - db
+         - redis
 
    # ===========================================
    # DATABASE - PostgreSQL avec persistance
