@@ -19,7 +19,9 @@ permissions:
    packages: write
 
 jobs:
-
+   # ===========================================
+   # JOB 1: Build & Publish Docker Images
+   # ===========================================
    build-and-publish:
       name: Build & Publish Images
       runs-on: ubuntu-latest
