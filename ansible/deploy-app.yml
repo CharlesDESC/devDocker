@@ -103,20 +103,23 @@
 
      # 6. Pull images from GHCR
      - name: Pull Docker images
-       community.docker.docker_compose_v2:
-          project_src: "{{ project_dir }}"
-          pull: always
+       command: docker compose pull
+       args:
+          chdir: "{{ project_dir }}"
        become: yes
        become_user: ubuntu
 
      # 7. Start application stack
      - name: Start application stack
-       community.docker.docker_compose_v2:
-          project_src: "{{ project_dir }}"
-          state: present
-          recreate: always
+       command: docker compose up -d --wait
+       args:
+          chdir: "{{ project_dir }}"
        become: yes
        become_user: ubuntu
+       register: compose_up
+       retries: 2
+       delay: 10
+       until: compose_up.rc == 0
 
      # 8. Wait for services to be healthy
      - name: Wait for services to start
