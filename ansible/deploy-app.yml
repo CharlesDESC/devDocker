@@ -118,7 +118,8 @@
        become_user: ubuntu
 
      - name: Wait for database to be healthy
-       shell: docker inspect --format='{{{{.State.Health.Status}}}}' devdocker-db-1
+       shell: |
+          docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' devdocker-db-1
        args:
           chdir: "{{ project_dir }}"
        become: yes
