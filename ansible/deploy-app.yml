@@ -109,19 +109,34 @@
        become: yes
        become_user: ubuntu
 
-     # 7. Start application stack
-     - name: Start application stack
-       command: docker compose up -d --wait
+     # 7. Start database services first
+     - name: Start database and cache services
+       command: docker compose up -d db redis
        args:
           chdir: "{{ project_dir }}"
        become: yes
        become_user: ubuntu
-       register: compose_up
-       retries: 2
-       delay: 10
-       until: compose_up.rc == 0
 
-     # 8. Wait for services to be healthy
+     - name: Wait for database to be healthy
+       command: docker compose exec -T db pg_isready -U postgres
+       args:
+          chdir: "{{ project_dir }}"
+       become: yes
+       become_user: ubuntu
+       register: db_ready
+       retries: 10
+       delay: 3
+       until: db_ready.rc == 0
+
+     # 8. Start application services
+     - name: Start application stack
+       command: docker compose up -d
+       args:
+          chdir: "{{ project_dir }}"
+       become: yes
+       become_user: ubuntu
+
+     # 9. Wait for all services to be ready
      - name: Wait for services to start
        pause:
           seconds: 10
