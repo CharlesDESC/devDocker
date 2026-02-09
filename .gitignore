@@ -39,6 +39,12 @@ Thumbs.db
 *.temp
 
 # Terraform
-*terraform*
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.pem
+key.pem
+inventory.ini
 
 
