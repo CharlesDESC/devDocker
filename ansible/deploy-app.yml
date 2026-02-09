@@ -118,15 +118,16 @@
        become_user: ubuntu
 
      - name: Wait for database to be healthy
-       command: docker compose exec -T db pg_isready -U postgres
+       shell: docker inspect --format='{{{{.State.Health.Status}}}}' devdocker-db-1
        args:
           chdir: "{{ project_dir }}"
        become: yes
        become_user: ubuntu
-       register: db_ready
-       retries: 10
-       delay: 3
-       until: db_ready.rc == 0
+       register: db_health
+       retries: 20
+       delay: 5
+       until: db_health.stdout == "healthy"
+       failed_when: false
 
      # 8. Start application services
      - name: Start application stack
