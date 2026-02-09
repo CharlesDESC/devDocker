@@ -100,15 +100,15 @@
 
      # 6. Pull images from GHCR
      - name: Pull Docker images
-       community.docker.docker_compose:
+       community.docker.docker_compose_v2:
           project_src: "{{ project_dir }}"
-          pull: yes
+          pull: always
        become: yes
        become_user: ubuntu
 
      # 7. Start application stack
      - name: Start application stack
-       community.docker.docker_compose:
+       community.docker.docker_compose_v2:
           project_src: "{{ project_dir }}"
           state: present
           recreate: always
